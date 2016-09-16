@@ -33,6 +33,6 @@
 }
 
 - (void)writeLog {
-    NSLog(@"here comes the log - %d", _count++);
+    NSLog(@"Log sample number: %d", _count++);
 }
 @end
