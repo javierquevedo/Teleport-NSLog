@@ -10,6 +10,7 @@ import (
     "path"
     "bytes"
     "log"
+    "fmt"
 )
 
 func Handler(resp http.ResponseWriter, req *http.Request) {
@@ -40,6 +41,7 @@ func Handler(resp http.ResponseWriter, req *http.Request) {
         http.Error(resp, err.Error(), http.StatusInternalServerError)
         return
     }   
+
     dst, err := os.OpenFile(path.Join("logs",deviceid), os.O_CREATE|os.O_APPEND|os.O_WRONLY,0600)
     log.Printf("Appending to %s", path.Join("logs",deviceid))
     if err != nil {
@@ -48,7 +50,22 @@ func Handler(resp http.ResponseWriter, req *http.Request) {
     }
     defer dst.Close()
     defer r.Close()
-    io.Copy(dst, r)
+    
+    count, err:= io.Copy(dst, r)
+    log.Printf("Bytes written: %d", count)
+    buf := make([]byte, 99962)
+    stat, err := os.Stat(path.Join("logs",deviceid))
+
+
+    start := stat.Size() - count
+    _, err = dst.ReadAt(buf, start)
+    if err == nil {
+        
+        fmt.Printf("%s\n", buf)
+    }else {
+        log.Fatal(err)
+    }
+    
 }
 
 func main() {

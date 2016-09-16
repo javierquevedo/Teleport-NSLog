@@ -10,7 +10,7 @@
 #import "Teleport.h"
 #import "TeleportUtils.h"
 
-static const int TP_LOG_REAPING_TIMER_INTERVAL = 5ull;
+static const int TP_LOG_REAPING_TIMER_INTERVAL = 1ull;
 static const char* const TP_LOG_REAPING_QUEUE_NAME = "com.teleport.LogReaping";
 
 @interface LogReaper() {
@@ -59,6 +59,7 @@ static const char* const TP_LOG_REAPING_QUEUE_NAME = "com.teleport.LogReaping";
         uint64_t leeway = 1ull * NSEC_PER_SEC;
         dispatch_source_set_timer(_timer, dispatch_time(DISPATCH_TIME_NOW, TP_LOG_REAPING_TIMER_INTERVAL * NSEC_PER_SEC / 2 ), interval, leeway);
         dispatch_source_set_event_handler(_timer, ^{
+            
             [self reap];
         });
         dispatch_resume(_timer);
@@ -85,10 +86,11 @@ static const char* const TP_LOG_REAPING_QUEUE_NAME = "com.teleport.LogReaping";
     // when the oldest file is current log file, nothing to reap
     if ([oldestFile isEqualToString:[_logRotator currentLogFilePath]])
         return;
-
+    [TeleportUtils teleportDebug:@"FORWARDING"];
     [TeleportUtils teleportDebug:[NSString stringWithFormat:@"Oldest log file: %@", oldestFile]];
 
     // Only reap 1 log file, the oldest one, at a time
+    
     @try {
         [_forwarder forwardLog:[NSData dataWithContentsOfFile:oldestFile] forDeviceId:[_uuid UUIDString]];
     }

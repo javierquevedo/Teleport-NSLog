@@ -10,10 +10,10 @@
 #import "Singleton.h"
 #import "TeleportUtils.h"
 
-static const int TP_LOG_ROTATION_TIMER_INTERVAL = 5ull;
+static const int TP_LOG_ROTATION_TIMER_INTERVAL = 1ull;
 static const char* const TP_LOG_ROTATION_QUEUE_NAME = "com.teleport.LogRotation";
 static const long long TP_MAX_LOG_FILE_SIZE = 500000ull;
-static const int TP_MAX_ROTATE_INTERVAL_IN_SECS = 30;
+static const int TP_MAX_ROTATE_INTERVAL_IN_SECS = 0.1;
 
 @interface LogRotator() {
     NSString *_currentLogPath;
@@ -73,8 +73,9 @@ static const int TP_MAX_ROTATE_INTERVAL_IN_SECS = 30;
 - (void)rotateIfNeeded
 {
     [TeleportUtils teleportDebug:@"Log rotation woke up"];
-
-    if (_currentLogPath == nil) {       //No current log. Create a new one
+    [self rotate];
+    return;
+    /*if (_currentLogPath == nil) {       //No current log. Create a new one
         [self rotate];
     } else {
         NSDate *timeToRotate = [_lastRotation dateByAddingTimeInterval:TP_MAX_ROTATE_INTERVAL_IN_SECS];
@@ -82,7 +83,7 @@ static const int TP_MAX_ROTATE_INTERVAL_IN_SECS = 30;
             || [[NSDate date] timeIntervalSinceReferenceDate] > [timeToRotate timeIntervalSinceReferenceDate] ) {
             [self rotate];
         }
-    }
+    }*/
 }
 
 - (long long)fileSize:(NSString *)filePath
